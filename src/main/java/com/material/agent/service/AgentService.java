@@ -1,5 +1,6 @@
 package com.material.agent.service;
 
+import com.material.agent.mcp.McpToolRegistry;
 import com.material.agent.router.Intent;
 import com.material.agent.router.IntentRouterService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +11,12 @@ import org.springframework.stereotype.Service;
 public class AgentService {
     
     private final IntentRouterService intentRouterService;
+    private final McpToolRegistry toolRegistry;
     
-    public AgentService(IntentRouterService intentRouterService) {
+    public AgentService(IntentRouterService intentRouterService, 
+                       McpToolRegistry toolRegistry) {
         this.intentRouterService = intentRouterService;
+        this.toolRegistry = toolRegistry;
     }
     
     public String process(String message, String sessionId, String userId) {
