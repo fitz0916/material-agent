@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  ai:
+    model:
+      type: kimi
+    anthropic:
+      base-url: https://api.moonshot.cn/v1
+      api-key: ${KIMI_API_KEY:}
+      chat:
+        options:
+          model: moonshot-v1-8k
+          temperature: 0.7
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        distance-type: COSINE_DISTANCE
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/materials
+    username: postgres
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket: materials
