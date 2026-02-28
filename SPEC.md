@@ -266,3 +266,23 @@ api/agent/approve | 审批操作 |
 ---
 
 *本规范由 OpenClaw AI 生成*
+
+---
+
+## 9. 扩展功能 (v1.1)
+
+### 9.1 ReAct 模式
+- 自主规划智能体
+- 推理 + 行动循环
+
+### 9.2 MCP 工具协议
+- 工具注册中心
+- 内置工具：material_query, document_search, stock_analysis
+
+### 9.3 混合检索
+- 向量 + 关键词融合
+- 重排序
+
+### 9.4 SSE 流式响应
+- 实时流式输出
+- 支持 /api/stream/chat
