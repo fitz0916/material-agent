@@ -1,40 +1,173 @@
 server:
   port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
+  application:
+    name: material-agent
+  
+  # AI 模型配置
   ai:
+    # 默认模型
     model:
-      type: kimi
-    anthropic:
+      type: ${AI_MODEL:kimi}
+    
+    # Kimi (Moonshot)
+    moonshot:
       base-url: https://api.moonshot.cn/v1
       api-key: ${KIMI_API_KEY:}
       chat:
         options:
           model: moonshot-v1-8k
           temperature: 0.7
+          max-tokens: 2048
+    
+    # OpenAI
+    openai:
+      base-url: https://api.openai.com/v1
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.7
+    
+    # Claude
+    anthropic:
+      base-url: https://api.anthropic.com/v1
+      api-key: ${ANTHROPIC_API_KEY:}
+      chat:
+        options:
+          model: claude-3-5-sonnet-20241022
+          temperature: 0.7
+    
+    # Ollama (本地模型)
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2
+          temperature: 0.7
+    
+    # 向量存储
     vectorstore:
       pgvector:
         initialize-schema: true
         distance-type: COSINE_DISTANCE
+        top-k: 5
 
+  # 数据源
   datasource:
-    url: jdbc:postgresql://localhost:5432/materials
-    username: postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:material_agent}
+    username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
+  # JPA
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  # Redis
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
 
+  # 文件上传
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  # 异步任务
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+    scheduling:
+      pool:
+        size: 2
+
+# MinIO 配置
 minio:
-  endpoint: http://localhost:9000
-  access-key: ${MINIO_ACCESS_KEY:}
-  secret-key: ${MINIO_SECRET_KEY:}
-  bucket: materials
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:materials}
+
+# Agent 配置
+agent:
+  max-iterations: 10
+  top-k: 5
+  temperature: 0.7
+  default-model: kimi
+  max-history-size: 20
+
+# 通知配置
+notification:
+  feishu:
+    webhook-url: ${FEISHU_WEBHOOK_URL:}
+  dingtalk:
+    webhook-url: ${DINGTALK_WEBHOOK_URL:}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.material.agent: DEBUG
+    org.springframework.ai: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/material-agent.log
+    max-size: 100MB
+    max-history: 30
+
+# Actuator 监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
