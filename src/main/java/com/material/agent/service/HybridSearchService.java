@@ -36,7 +36,7 @@ public class HybridSearchService {
         List<Document> keywordResults = keywordSearch(query, topK);
         
         // 3. 合并结果
-        return mergeAndRerank(vectorResults, keywordResults, query);
+        return mergeAndRerank(vectorResults, keywordResults, query, topK);
     }
 
     private List<Document> keywordSearch(String query, int topK) {
@@ -45,7 +45,7 @@ public class HybridSearchService {
         return new ArrayList<>();
     }
 
-    private List<Document> mergeAndRerank(List<Document> vector, List<Document> keyword, String query) {
+    private List<Document> mergeAndRerank(List<Document> vector, List<Document> keyword, String query, int topK) {
         List<Document> merged = new ArrayList<>();
         merged.addAll(vector);
         

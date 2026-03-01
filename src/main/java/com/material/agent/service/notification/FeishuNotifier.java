@@ -31,7 +31,7 @@ public class FeishuNotifier {
                         "template", "blue"
                     ),
                     "elements", new Object[]{
-                        Map.of("tag", "div", Map.of("", "texttag", "plain_text", "content", content)),
+                        Map.of("tag", "div", "text", Map.of("tag", "plain_text", "content", content)),
                         Map.of("tag", "div", "fields", new Object[]{
                             Map.of("is_short", true, "text", Map.of("tag", "plain_text", "content", "申请人: " + requester)),
                             Map.of("is_short", true, "text", Map.of("tag", "plain_text", "content", "任务ID: " + taskId))

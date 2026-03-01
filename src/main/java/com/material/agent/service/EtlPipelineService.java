@@ -37,8 +37,8 @@ public class EtlPipelineService {
             // 1. 从 MinIO 读取文件
             String content = readFileContent(filePath);
             
-            // 2. 文档分块
-            List<String> chunks = splitIntoChunks(content, 500);
+            // 2. 文档分块 (500字符，50字符重叠)
+            List<String> chunks = splitIntoChunks(content, 500, 50);
             
             // 3. 向量化入库
             for (int i = 0; i < chunks.size(); i++) {
@@ -73,21 +73,44 @@ public class EtlPipelineService {
         }
     }
 
-    private List<String> splitIntoChunks(String content, int chunkSize) {
+    /**
+     * 文档分块 - 支持中英文
+     * @param content 文档内容
+     * @param chunkSize 每个 chunk 的字符数
+     * @param overlap 相邻 chunk 之间的重叠字符数
+     */
+    private List<String> splitIntoChunks(String content, int chunkSize, int overlap) {
         List<String> chunks = new java.util.ArrayList<>();
-        String[] words = content.split("\\s+");
-        StringBuilder chunk = new StringBuilder();
         
-        for (String word : words) {
-            if (chunk.length() + word.length() > chunkSize) {
-                chunks.add(chunk.toString());
-                chunk = new StringBuilder();
-            }
-            chunk.append(word).append(" ");
+        if (content == null || content.isEmpty()) {
+            return chunks;
         }
         
-        if (chunk.length() > 0) {
-            chunks.add(chunk.toString());
+        int start = 0;
+        while (start < content.length()) {
+            int end = Math.min(start + chunkSize, content.length());
+            
+            // 尽量在句子边界切分
+            if (end < content.length()) {
+                // 寻找最后一个句号、逗号或换行符
+                int lastBoundary = Math.max(
+                    content.lastIndexOf('。', end),
+                    Math.max(content.lastIndexOf('，', end),
+                        Math.max(content.lastIndexOf('\n', end), 
+                                content.lastIndexOf('.', end)))
+                );
+                if (lastBoundary > start + chunkSize / 2) {
+                    end = lastBoundary + 1;
+                }
+            }
+            
+            chunks.add(content.substring(start, end));
+            start = end - overlap;
+            
+            // 防止无限循环
+            if (start <= 0 || start >= content.length()) {
+                break;
+            }
         }
         
         return chunks;
