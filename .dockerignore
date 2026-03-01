@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+.vscode
+
+# Build
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+src/test/
+
+# Docs
+docs/
+README*.md
+
+# Temp
+*.tmp
+*.bak
